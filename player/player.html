@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <title>Focus Player</title>
+    <link rel="stylesheet" href="player.css" />
+  </head>
+  <body class="bg-deep-work">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <button class="back-btn">←</button>
+
+      <div class="activity-selector">
+        <button class="dropdown-btn" id="dropdown-btn">
+          <span id="current-icon">❄️</span>
+          <span id="current-activity">Deep Work</span>
+          <span>▼</span>
+        </button>
+        <div class="dropdown-content" id="dropdown-content">
+          <div
+            class="activity-option selected"
+            data-value="deep-work"
+            data-icon="❄️"
+          >
+            <span>Deep Work</span>
+          </div>
+          <div class="activity-option" data-value="creativity" data-icon="🎨">
+            <span>Creativity</span>
+          </div>
+          <div class="activity-option" data-value="learning" data-icon="📚">
+            <span>Learning</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-controls">
+        <button class="icon-btn" id="tracks-btn">♪</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="timer-section">
+        <div class="timer-label" id="timer-label">25 MINUTES OF WORK</div>
+        <div class="timer-display" id="timer-display">25:00</div>
+        <button class="interval-btn" id="interval-btn">
+          <span>⏱</span>
+          <span>Timer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Warning Modal -->
+    <div class="warning-modal" id="warning-modal">
+      <div class="warning-content">
+        <div class="warning-message">
+          Changing timer mode will lose your current progress. Continue?
+        </div>
+        <div class="warning-buttons">
+          <button class="warning-btn" id="cancel-warning-btn">Cancel</button>
+          <button class="warning-btn confirm" id="confirm-warning-btn">
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timer Mode Overlay -->
+    <div class="timer-mode-overlay" id="timer-mode-overlay">
+      <div class="timer-mode-wrapper">
+        <div class="timer-mode-container">
+          <div class="timer-mode-header">
+            <div class="timer-mode-title">Timer Settings</div>
+            <button class="close-btn" id="close-timer-btn">×</button>
+          </div>
+
+          <div class="timer-mode-options">
+            <div class="timer-mode-option" data-mode="infinite">
+              <div class="option-icon">∞</div>
+              <div class="option-title">Infinite</div>
+              <div class="option-desc">Count up endlessly</div>
+            </div>
+            <div class="timer-mode-option" data-mode="timer">
+              <div class="option-icon">⏱</div>
+              <div class="option-title">Timer</div>
+              <div class="option-desc">Set a countdown</div>
+            </div>
+            <div class="timer-mode-option selected" data-mode="interval">
+              <div class="option-icon">🍅</div>
+              <div class="option-title">Intervals</div>
+              <div class="option-desc">Work/rest cycles</div>
+            </div>
+          </div>
+
+          <div class="interval-settings">
+            <div class="interval-settings-title">Set Interval</div>
+            <div class="interval-settings-subtitle">
+              Select your desired work and rest lengths
+            </div>
+
+            <div class="time-options-container">
+              <div class="time-option-column">
+                <div class="time-option-title">Work Time</div>
+                <button class="time-option-btn active">25 min</button>
+                <button class="time-option-btn">30 min</button>
+                <button class="time-option-btn">35 min</button>
+                <button class="time-option-btn">40 min</button>
+              </div>
+
+              <div class="time-option-column">
+                <div class="time-option-title">Rest Time</div>
+                <button class="time-option-btn">5 min</button>
+                <button class="time-option-btn active">10 min</button>
+                <button class="time-option-btn">15 min</button>
+                <button class="time-option-btn">20 min</button>
+              </div>
+            </div>
+
+            <div class="custom-time-inputs">
+              <div class="custom-time-input">
+                <span>Work:</span>
+                <input
+                  type="number"
+                  id="work-minutes"
+                  min="1"
+                  max="120"
+                  placeholder="20"
+                />
+                <span>min</span>
+              </div>
+              <div class="custom-time-input">
+                <span>Break:</span>
+                <input
+                  type="number"
+                  id="break-minutes"
+                  min="1"
+                  max="30"
+                  placeholder="5"
+                />
+                <span>min</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="interval-settings"
+            id="timer-settings"
+            style="display: none"
+          >
+            <div class="interval-settings-title">Set Timer Duration</div>
+            <div class="interval-settings-subtitle">
+              Select your desired timer length
+            </div>
+
+            <div class="time-options-container">
+              <div class="time-option-column">
+                <button class="time-option-btn">5 min</button>
+                <button class="time-option-btn">10 min</button>
+                <button class="time-option-btn">15 min</button>
+                <button class="time-option-btn">20 min</button>
+                <button class="time-option-btn">25 min</button>
+                <button class="time-option-btn">30 min</button>
+              </div>
+            </div>
+
+            <div class="custom-time-inputs">
+              <div class="custom-time-input">
+                <span>Custom:</span>
+                <input
+                  type="number"
+                  id="timer-minutes"
+                  min="1"
+                  max="120"
+                  placeholder="25"
+                />
+                <span>min</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="interval-btn" id="confirm-timer-btn">
+            Start Timer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Player -->
+    <div class="bottom-player" id="bottom-player">
+      <div style="display: flex; align-items: center; gap: 1rem">
+        <div class="track-art" id="track-art">🎵</div>
+        <div class="track-info">
+          <div class="track-title" id="track-title">Select a track</div>
+        </div>
+        <div class="player-controls">
+          <button class="control-btn" id="prev-btn">⏮</button>
+          <button class="control-btn play-pause-btn" id="play-pause-btn">
+            ▶
+          </button>
+          <button class="control-btn" id="next-btn">⏭</button>
+          <div class="volume-control">
+            <button class="control-btn volume-btn" id="volume-btn">🔊</button>
+            <div class="volume-slider" id="volume-slider">
+              <input
+                type="range"
+                id="volume-range"
+                min="0"
+                max="1"
+                step="0.01"
+                value="1"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress" id="progress" style="width: 0%"></div>
+        <input
+          type="range"
+          id="progress-range"
+          min="0"
+          max="100"
+          value="0"
+          step="0.1"
+        />
+      </div>
+    </div>
+
+    <!-- Track List Overlay -->
+    <div class="track-list-overlay" id="track-list-overlay">
+      <div class="track-list-header">
+        <div class="track-list-title" id="playlist-title">Playlist</div>
+        <button class="close-btn" id="close-tracks-btn">×</button>
+      </div>
+      <div class="track-list" id="track-list"></div>
+    </div>
+
+    <audio id="audio-player" preload="auto"></audio>
+
+    <script>
+      const backgrounds = {
+        "deep-work": "bg-deep-work",
+        creativity: "bg-creativity",
+        learning: "bg-learning",
+      };
+
+      const activityLabels = {
+        "deep-work": "25 MINUTES OF WORK",
+        creativity: "25 MINUTES OF CREATIVITY",
+        learning: "25 MINUTES OF LEARNING",
+      };
+
+      const playlistTitles = {
+        "deep-work": "Deep Work Playlist",
+        creativity: "Creativity Playlist",
+        learning: "Learning Playlist",
+      };
+
+      let currentActivity = "deep-work";
+      let isPlaying = false;
+      let timeLeft = 25 * 60;
+      let timerInterval;
+      let currentTracks = [];
+      let currentTrackIndex = -1;
+      let isSelectingTrack = false;
+
+      // Timer system
+      let timerMode = "infinite"; // 'infinite', 'timer', or 'interval'
+      let currentTimerMode = "infinite";
+      let isTimerRunning = false;
+      let isWorkPhase = true;
+      let pendingTimerModeChange = null;
+      let timerEndSound = new Audio("../sounds/workintervalend.wav");
+      let breakEndSound = new Audio("../sounds/breakintervalend.wav");
+
+      // DOM elements
+      const dropdownBtn = document.getElementById("dropdown-btn");
+      const dropdownContent = document.getElementById("dropdown-content");
+      const currentIcon = document.getElementById("current-icon");
+      const currentActivityEl = document.getElementById("current-activity");
+      const timerLabel = document.getElementById("timer-label");
+      const timerDisplay = document.getElementById("timer-display");
+      const intervalBtn = document.getElementById("interval-btn");
+      const bottomPlayer = document.getElementById("bottom-player");
+      const playPauseBtn = document.getElementById("play-pause-btn");
+      const prevBtn = document.getElementById("prev-btn");
+      const nextBtn = document.getElementById("next-btn");
+      const volumeBtn = document.getElementById("volume-btn");
+      const volumeSlider = document.getElementById("volume-slider");
+      const volumeRange = document.getElementById("volume-range");
+      const progressBar = document.getElementById("progress-bar");
+      const progressRange = document.getElementById("progress-range");
+      const progress = document.getElementById("progress");
+      const tracksBtn = document.getElementById("tracks-btn");
+      const trackListOverlay = document.getElementById("track-list-overlay");
+      const closeTracksBtn = document.getElementById("close-tracks-btn");
+      const trackList = document.getElementById("track-list");
+      const playlistTitle = document.getElementById("playlist-title");
+      const trackTitle = document.getElementById("track-title");
+      const audioPlayer = document.getElementById("audio-player");
+      const timerModeOverlay = document.getElementById("timer-mode-overlay");
+      const closeTimerBtn = document.getElementById("close-timer-btn");
+      const confirmTimerBtn = document.getElementById("confirm-timer-btn");
+      const timerModeOptions = document.querySelectorAll(".timer-mode-option");
+      const timerMinutesInput = document.getElementById("timer-minutes");
+      const workMinutesInput = document.getElementById("work-minutes");
+      const breakMinutesInput = document.getElementById("break-minutes");
+      const warningModal = document.getElementById("warning-modal");
+      const cancelWarningBtn = document.getElementById("cancel-warning-btn");
+      const confirmWarningBtn = document.getElementById("confirm-warning-btn");
+      const timeOptionBtns = document.querySelectorAll(".time-option-btn");
+      const workTimeColumn = document.querySelectorAll(
+        ".time-option-column"
+      )[0];
+      const breakTimeColumn = document.querySelectorAll(
+        ".time-option-column"
+      )[1];
+      const timerSettings = document.getElementById("timer-settings");
+      const body = document.body;
+
+      // Initialize volume
+      const savedVolume = localStorage.getItem("playerVolume") || "1";
+      audioPlayer.volume = parseFloat(savedVolume);
+      volumeRange.value = savedVolume;
+      volumeBtn.textContent =
+        savedVolume === "0" ? "🔇" : savedVolume <= 0.5 ? "🔉" : "🔊";
+
+      // Load tracks
+      async function loadTracks(activity) {
+        trackList.innerHTML = "<div>Loading...</div>";
+        try {
+          const response = await fetch(`../songs/focus/${activity}.json`);
+          const tracks = await response.json();
+          currentTracks = tracks;
+          renderTrackList(tracks);
+          playlistTitle.textContent = playlistTitles[activity] || "Playlist";
+          if (currentTrackIndex !== -1) {
+            document.querySelectorAll(".track-item").forEach((item) => {
+              item.classList.remove("active");
+              if (parseInt(item.dataset.index) === currentTrackIndex) {
+                item.classList.add("active");
+              }
+            });
+          }
+        } catch (e) {
+          trackList.innerHTML = "<div>Error loading tracks</div>";
+          console.error("Error loading tracks:", e);
+        }
+      }
+
+      function renderTrackList(tracks) {
+        trackList.innerHTML = "";
+        tracks.forEach((track, index) => {
+          const div = document.createElement("div");
+          div.className = "track-item";
+          div.textContent = track.name;
+          div.dataset.index = index;
+          div.addEventListener("click", () => selectTrack(index));
+          trackList.appendChild(div);
+        });
+      }
+
+      async function selectTrack(index) {
+        if (isSelectingTrack || index < 0 || index >= currentTracks.length)
+          return;
+        isSelectingTrack = true;
+
+        try {
+          currentTrackIndex = index;
+          const track = currentTracks[index];
+
+          document.querySelectorAll(".track-item").forEach((item) => {
+            item.classList.remove("active");
+            if (parseInt(item.dataset.index) === index) {
+              item.classList.add("active");
+            }
+          });
+
+          trackTitle.textContent = track.name;
+          audioPlayer.src = track.url;
+          bottomPlayer.classList.add("show");
+          trackListOverlay.classList.remove("show");
+
+          audioPlayer.currentTime = 0;
+          await audioPlayer.play();
+          isPlaying = true;
+          playPauseBtn.textContent = "⏸";
+          startTimer(); // Start timer when new track begins
+        } catch (error) {
+          console.error("Autoplay failed:", error);
+          isPlaying = false;
+          playPauseBtn.textContent = "▶";
+          trackTitle.textContent = `${track.name} (Click play to start)`;
+        } finally {
+          isSelectingTrack = false;
+        }
+      }
+
+      // Activity dropdown
+      dropdownBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdownContent.classList.toggle("show");
+      });
+      document.addEventListener("click", () =>
+        dropdownContent.classList.remove("show")
+      );
+
+      document.querySelectorAll(".activity-option").forEach((option) => {
+        option.addEventListener("click", () => {
+          const value = option.dataset.value;
+          const icon = option.dataset.icon;
+          const name = option.textContent.trim();
+
+          document
+            .querySelectorAll(".activity-option")
+            .forEach((opt) => opt.classList.remove("selected"));
+          option.classList.add("selected");
+
+          currentIcon.textContent = icon;
+          currentActivityEl.textContent = name;
+          timerLabel.textContent = activityLabels[value];
+
+          Object.values(backgrounds).forEach((bg) => body.classList.remove(bg));
+          body.classList.add(backgrounds[value]);
+
+          currentActivity = value;
+          loadTracks(value);
+          dropdownContent.classList.remove("show");
+        });
+      });
+
+      // Timer interface
+      intervalBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        timerModeOverlay.classList.add("show");
+        timerModeOverlay.style.visibility = "visible";
+        timerModeOverlay.style.opacity = "1";
+      });
+
+      function closeTimerOverlay() {
+        timerModeOverlay.classList.remove("show");
+        timerModeOverlay.style.visibility = "hidden";
+        timerModeOverlay.style.opacity = "0";
+      }
+
+      closeTimerBtn.addEventListener("click", closeTimerOverlay);
+
+      timerModeOverlay.addEventListener("click", (e) => {
+        if (e.target === timerModeOverlay) {
+          closeTimerOverlay();
+        }
+      });
+
+      timerModeOptions.forEach((option) => {
+        option.addEventListener("click", () => {
+          timerModeOptions.forEach((opt) => opt.classList.remove("selected"));
+          option.classList.add("selected");
+          timerMode = option.dataset.mode;
+
+          // Show/hide appropriate sections
+          document.querySelector(".interval-settings").style.display =
+            timerMode === "interval" ? "block" : "none";
+          timerSettings.style.display =
+            timerMode === "timer" ? "block" : "none";
+        });
+      });
+
+      // handle timer option button clicks:
+      document
+        .querySelectorAll("#timer-settings .time-option-btn")
+        .forEach((btn) => {
+          btn.addEventListener("click", function () {
+            // Remove active class from all buttons in timer settings
+            document
+              .querySelectorAll("#timer-settings .time-option-btn")
+              .forEach((b) => b.classList.remove("active"));
+
+            // Add active class to clicked button
+            this.classList.add("active");
+
+            // Update the timer input field
+            timerMinutesInput.value = parseInt(this.textContent);
+          });
+        });
+
+      // Update the timerMinutesInput change handler:
+      timerMinutesInput.addEventListener("change", function () {
+        if (this.value < 1) this.value = 1;
+        if (this.value > 120) this.value = 120;
+
+        // Remove active class from all timer option buttons
+        document
+          .querySelectorAll("#timer-settings .time-option-btn")
+          .forEach((b) => b.classList.remove("active"));
+      });
+
+      // Handle time option button clicks
+      timeOptionBtns.forEach((btn) => {
+        btn.addEventListener("click", function () {
+          // Remove active class from all buttons in the same column
+          const column = this.closest(".time-option-column");
+          column
+            .querySelectorAll(".time-option-btn")
+            .forEach((b) => b.classList.remove("active"));
+
+          // Add active class to clicked button
+          this.classList.add("active");
+
+          // Update the corresponding input field
+          const timeValue = parseInt(this.textContent);
+          if (column === workTimeColumn) {
+            workMinutesInput.value = timeValue;
+          } else {
+            breakMinutesInput.value = timeValue;
+          }
+        });
+      });
+
+      // Handle custom time inputs
+      workMinutesInput.addEventListener("change", function () {
+        if (this.value < 1) this.value = 1;
+        if (this.value > 120) this.value = 120;
+      });
+
+      breakMinutesInput.addEventListener("change", function () {
+        if (this.value < 1) this.value = 1;
+        if (this.value > 30) this.value = 30;
+      });
+
+      confirmTimerBtn.addEventListener("click", () => {
+        // If timer is running and we're changing to a different mode, show warning
+        if (isTimerRunning && currentTimerMode !== timerMode) {
+          warningModal.classList.add("show");
+          return;
+        }
+
+        // Set the pending change to current selection
+        pendingTimerModeChange = timerMode;
+        applyTimerModeChange();
+      });
+
+      function applyTimerModeChange() {
+        closeTimerOverlay();
+        if (timerInterval) clearInterval(timerInterval);
+
+        // Update the current mode
+        currentTimerMode = pendingTimerModeChange || timerMode;
+        timerMode = currentTimerMode;
+
+        // Reset Pomodoro state when changing modes
+        isWorkPhase = true;
+
+        switch (timerMode) {
+          case "infinite":
+            timeLeft = 0;
+            timerLabel.textContent = "INFINITE PLAY";
+            break;
+          case "timer":
+            timeLeft = parseInt(timerMinutesInput.value || 25) * 60;
+            timerLabel.textContent = `${
+              timerMinutesInput.value || 25
+            } MINUTE TIMER`;
+            break;
+          case "interval":
+            timeLeft = parseInt(workMinutesInput.value || 25) * 60;
+            timerLabel.textContent = `WORK: ${
+              workMinutesInput.value || 25
+            } MINUTES`;
+            break;
+        }
+
+        updateTimerDisplay();
+        if (isPlaying) {
+          startTimer();
+        }
+
+        pendingTimerModeChange = null;
+      }
+
+      // Add warning modal handlers
+      cancelWarningBtn.addEventListener("click", () => {
+        warningModal.classList.remove("show");
+        pendingTimerModeChange = currentTimerMode; // Reset to current mode
+      });
+
+      confirmWarningBtn.addEventListener("click", () => {
+        warningModal.classList.remove("show");
+        applyTimerModeChange();
+      });
+
+      warningModal.addEventListener("click", (e) => {
+        if (e.target === warningModal) {
+          warningModal.classList.remove("show");
+          pendingTimerModeChange = null;
+        }
+      });
+
+      function startTimer() {
+        if (!isPlaying) return; // Only run if audio is playing
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 1000);
+        isTimerRunning = true;
+        updateIntervalButtonText();
+      }
+
+      function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        isTimerRunning = false;
+        updateIntervalButtonText();
+      }
+
+      function updateTimer() {
+        if (!isPlaying) {
+          stopTimer();
+          return;
+        }
+
+        if (timerMode === "infinite") {
+          timeLeft++;
+        } else {
+          if (timeLeft > 0) {
+            timeLeft--;
+          } else {
+            handleTimerCompletion();
+          }
+        }
+        updateTimerDisplay();
+      }
+
+      function updateTimerDisplay() {
+        const minutes = Math.floor(Math.abs(timeLeft) / 60);
+        const seconds = Math.abs(timeLeft) % 60;
+        timerDisplay.textContent = `${minutes}:${seconds
+          .toString()
+          .padStart(2, "0")}`;
+      }
+
+      function handleTimerCompletion() {
+        if (timerMode === "interval") {
+          if (isWorkPhase) {
+            timerEndSound.play();
+            timeLeft = parseInt(breakMinutesInput.value) * 60;
+            isWorkPhase = false;
+            timerLabel.textContent = `BREAK: ${breakMinutesInput.value} MINUTES`;
+          } else {
+            breakEndSound.play();
+            timeLeft = parseInt(workMinutesInput.value) * 60;
+            isWorkPhase = true;
+            timerLabel.textContent = `WORK: ${workMinutesInput.value} MINUTES`;
+          }
+        } else {
+          timerEndSound.play();
+          stopTimer();
+        }
+      }
+
+      function updateIntervalButtonText() {
+        let label;
+        switch (timerMode) {
+          case "infinite":
+            label = isTimerRunning ? "Stop" : "Infinite";
+            break;
+          case "timer":
+            label = isTimerRunning ? "Stop" : "Timer";
+            break;
+          case "interval":
+            label = isTimerRunning ? "Stop" : "Pomodoro";
+            break;
+        }
+        intervalBtn.innerHTML = `<span>⏱</span><span>${label}</span>`;
+      }
+
+      // Adjust dropdown positioning on mobile
+      function positionDropdown() {
+        if (window.innerWidth <= 400) {
+          dropdownContent.style.right = "auto";
+          dropdownContent.style.left = "16px";
+          dropdownContent.style.width = "calc(100% - 32px)";
+        } else {
+          dropdownContent.style.right = "0";
+          dropdownContent.style.left = "auto";
+          dropdownContent.style.width = "auto";
+        }
+      }
+
+      // Call on load and resize
+      window.addEventListener("load", positionDropdown);
+      window.addEventListener("resize", positionDropdown);
+
+      // Also call when opening dropdown
+      dropdownBtn.addEventListener("click", function () {
+        setTimeout(positionDropdown, 10);
+      });
+
+      // Audio controls
+      playPauseBtn.addEventListener("click", async () => {
+        if (currentTrackIndex === -1 && currentTracks.length > 0) {
+          await selectTrack(0);
+        } else if (isPlaying) {
+          audioPlayer.pause();
+          isPlaying = false;
+          playPauseBtn.textContent = "▶";
+          stopTimer(); // Pause timer when audio pauses
+        } else {
+          try {
+            await audioPlayer.play();
+            isPlaying = true;
+            playPauseBtn.textContent = "⏸";
+            startTimer(); // Start timer when audio plays
+          } catch (error) {
+            console.error("Play failed:", error);
+            trackTitle.textContent = `${currentTracks[currentTrackIndex].name} (Click play again)`;
+          }
+        }
+        bottomPlayer.classList.add("show");
+      });
+
+      prevBtn.addEventListener("click", () => {
+        if (currentTrackIndex > 0) {
+          stopTimer(); // Stop current timer
+          selectTrack(currentTrackIndex - 1); // Will auto-start timer
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (currentTrackIndex < currentTracks.length - 1) {
+          stopTimer(); // Stop current timer
+          selectTrack(currentTrackIndex + 1); // Will auto-start timer
+        }
+      });
+
+      // Auto-scroll to top when opening timer settings
+      intervalBtn.addEventListener("click", function () {
+        setTimeout(() => {
+          timerModeOverlay.scrollTo(0, 0);
+        }, 50);
+      });
+
+      volumeBtn.addEventListener("click", () => {
+        audioPlayer.muted = !audioPlayer.muted;
+        volumeRange.value = audioPlayer.muted
+          ? 0
+          : localStorage.getItem("playerVolume") || 1;
+        audioPlayer.volume = parseFloat(volumeRange.value);
+        volumeBtn.textContent =
+          volumeRange.value == 0
+            ? "🔇"
+            : volumeRange.value <= 0.5
+            ? "🔉"
+            : "🔊";
+        localStorage.setItem("playerVolume", volumeRange.value);
+      });
+
+      volumeRange.addEventListener("input", () => {
+        audioPlayer.volume = volumeRange.value;
+        audioPlayer.muted = volumeRange.value === "0";
+        volumeBtn.textContent =
+          volumeRange.value === "0"
+            ? "🔇"
+            : volumeRange.value <= 0.5
+            ? "🔉"
+            : "🔊";
+        localStorage.setItem("playerVolume", volumeRange.value);
+      });
+
+      audioPlayer.addEventListener("timeupdate", () => {
+        if (audioPlayer.duration) {
+          const progressPercent =
+            (audioPlayer.currentTime / audioPlayer.duration) * 100;
+          progress.style.width = `${progressPercent}%`;
+          progressRange.value = progressPercent;
+        }
+      });
+
+      progressRange.addEventListener("input", () => {
+        if (audioPlayer.duration) {
+          const newTime = (progressRange.value / 100) * audioPlayer.duration;
+          audioPlayer.currentTime = newTime;
+          progress.style.width = `${progressRange.value}%`;
+        }
+      });
+
+      tracksBtn.addEventListener("click", () =>
+        trackListOverlay.classList.add("show")
+      );
+      closeTracksBtn.addEventListener("click", () =>
+        trackListOverlay.classList.remove("show")
+      );
+
+      audioPlayer.addEventListener("ended", () => {
+        if (currentTrackIndex < currentTracks.length - 1) {
+          selectTrack(currentTrackIndex + 1);
+        } else {
+          isPlaying = false;
+          playPauseBtn.textContent = "▶";
+          stopTimer(); // Stop timer when playlist ends
+        }
+      });
+
+      async function init() {
+        bottomPlayer.classList.add("show");
+        await loadTracks(currentActivity);
+        if (currentTracks.length > 0) {
+          currentTrackIndex = 0;
+          trackTitle.textContent = currentTracks[0].name;
+          audioPlayer.src = currentTracks[0].url;
+          document.querySelectorAll(".track-item")[0].classList.add("active");
+        }
+        updateTimerDisplay();
+        updateIntervalButtonText();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
