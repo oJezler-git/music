@@ -250,6 +250,7 @@
       let currentTracks = [];
       let currentTrackIndex = -1;
       let isSelectingTrack = false;
+      let audioContext = null;
 
       // Timer system
       let timerMode = "interval"; // 'infinite', 'timer', or 'interval'
@@ -347,6 +348,7 @@
         });
       }
 
+      // Modify the selectTrack function to lazy load audio
       async function selectTrack(index) {
         if (isSelectingTrack || index < 0 || index >= currentTracks.length)
           return;
@@ -356,6 +358,7 @@
           currentTrackIndex = index;
           const track = currentTracks[index];
 
+          // Update UI first
           document.querySelectorAll(".track-item").forEach((item) => {
             item.classList.remove("active");
             if (parseInt(item.dataset.index) === index) {
@@ -364,24 +367,51 @@
           });
 
           trackTitle.textContent = track.name;
-          audioPlayer.src = track.url;
           bottomPlayer.classList.add("show");
-          trackListOverlay.classList.remove("show");
 
-          audioPlayer.currentTime = 0;
-          await audioPlayer.play();
-          isPlaying = true;
-          playPauseBtn.textContent = "⏸";
-          startTimer(); // Start timer when new track begins
+          // Only load audio when actually needed
+          if (isPlaying) {
+            audioPlayer.src = track.url;
+            await audioPlayer.play();
+            playPauseBtn.textContent = "⏸";
+            startTimer();
+          } else {
+            // Just prepare the player but don't load yet
+            audioPlayer.src = track.url;
+            playPauseBtn.textContent = "▶";
+          }
+
+          trackListOverlay.classList.remove("show");
         } catch (error) {
-          console.error("Autoplay failed:", error);
-          isPlaying = false;
-          playPauseBtn.textContent = "▶";
-          trackTitle.textContent = `${track.name} (Click play to start)`;
+          console.error("Error selecting track:", error);
         } finally {
           isSelectingTrack = false;
         }
       }
+
+      // Update play/pause button to handle lazy loading
+      playPauseBtn.addEventListener("click", async () => {
+        if (currentTrackIndex === -1 && currentTracks.length > 0) {
+          await selectTrack(0);
+        } else if (isPlaying) {
+          audioPlayer.pause();
+          isPlaying = false;
+          playPauseBtn.textContent = "▶";
+          stopTimer();
+        } else {
+          try {
+            // If src isn't loaded yet, this will trigger the load
+            await audioPlayer.play();
+            isPlaying = true;
+            playPauseBtn.textContent = "⏸";
+            startTimer();
+          } catch (error) {
+            console.error("Play failed:", error);
+            trackTitle.textContent = `${currentTracks[currentTrackIndex].name} (Click play again)`;
+          }
+        }
+        bottomPlayer.classList.add("show");
+      });
 
       // Activity dropdown
       dropdownBtn.addEventListener("click", (e) => {
@@ -424,13 +454,70 @@
         timerModeOverlay.style.opacity = "1";
       });
 
+      function handleTimerModeChange() {
+        timerModeOptions.forEach((opt) => opt.classList.remove("selected"));
+        this.classList.add("selected");
+        timerMode = this.dataset.mode;
+
+        document.querySelector(".interval-settings").style.display =
+          timerMode === "interval" ? "block" : "none";
+        timerSettings.style.display = timerMode === "timer" ? "block" : "none";
+      }
+
+      function handleTimeOptionClick() {
+        const column = this.closest(".time-option-column");
+        column
+          .querySelectorAll(".time-option-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
+
+        const timeValue = parseInt(this.textContent);
+        if (column === workTimeColumn) {
+          workMinutesInput.value = timeValue;
+        } else {
+          breakMinutesInput.value = timeValue;
+        }
+      }
+
+      timerModeOptions.forEach((option) => {
+        option.addEventListener("click", handleTimerModeChange);
+      });
+
+      timeOptionBtns.forEach((btn) => {
+        btn.addEventListener("click", handleTimeOptionClick);
+      });
+
       function closeTimerOverlay() {
         timerModeOverlay.classList.remove("show");
         timerModeOverlay.style.visibility = "hidden";
         timerModeOverlay.style.opacity = "0";
+
+        // Clean up timer mode options
+        document.querySelectorAll(".timer-mode-option").forEach((opt) => {
+          opt.removeEventListener("click", handleTimerModeChange);
+        });
+
+        // Clean up time option buttons
+        document.querySelectorAll(".time-option-btn").forEach((btn) => {
+          btn.removeEventListener("click", handleTimeOptionClick);
+        });
       }
 
       closeTimerBtn.addEventListener("click", closeTimerOverlay);
+
+      // Add cleanup when closing overlays
+      function closeTrackListOverlay() {
+        trackListOverlay.classList.remove("show");
+
+        // Clean up scroll listener
+        trackList.removeEventListener("scroll", updateVisibleTracks);
+
+        // Clean up track items
+        trackList.innerHTML = "";
+      }
+
+      // Update the close button event listener
+      closeTracksBtn.addEventListener("click", closeTrackListOverlay);
 
       timerModeOverlay.addEventListener("click", (e) => {
         if (e.target === timerModeOverlay) {
