@@ -1021,51 +1021,94 @@ body::before {
   gap: 12px;
 }
 
+/* Replace the existing .volume-slider styles with these: */
 .volume-slider {
   width: 120px;
   position: relative;
+  height: 8px;
 }
 
 .volume-slider input[type="range"] {
+  /* Make the input cover the entire slider area */
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 8px;
-  -webkit-appearance: none;
-  background: transparent;
+  height: 100%;
+  margin: 0;
+  opacity: 0; /* Make it completely transparent */
+  z-index: 4; /* Above everything else */
   cursor: pointer;
-  border-radius: 4px;
 }
 
-.volume-slider input[type="range"]::-webkit-slider-runnable-track {
+/* Hide the default thumb completely */
+.volume-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+}
+
+/* Track styling - matches progress bar */
+.volume-slider::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 8px;
-  background: linear-gradient(
-    90deg,
-    var(--glass-bg) 0%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
+  background: var(--glass-bg);
   border-radius: 4px;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
   border: 1px solid var(--glass-border);
+  z-index: 1;
 }
 
-.volume-slider input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
+/* Add a progress-like fill for the volume */
+.volume-slider::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--volume-percent, 100) * 1%);
+  height: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-primary) 0%,
+    var(--accent-secondary) 100%
+  );
+  border-radius: 4px;
+  pointer-events: none;
+  transition: width var(--transition-fast);
+  box-shadow: 0 0 20px var(--accent-glow);
+  z-index: 1;
+}
+
+/* Custom thumb styling */
+.volume-thumb {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--volume-percent, 100) * 1%);
+  width: 16px;
+  height: 16px;
   background: linear-gradient(
     135deg,
     var(--accent-primary) 0%,
     var(--accent-secondary) 100%
   );
   border-radius: 50%;
-  margin-top: -6px;
-  cursor: pointer;
-  box-shadow: var(--shadow-soft), var(--shadow-glow);
+  transform: translate(-50%, -50%);
+  pointer-events: none; /* This prevents it from blocking the actual input */
   transition: all var(--transition-fast);
   border: 2px solid rgba(255, 255, 255, 0.2);
+  z-index: 3;
+  box-shadow: var(--shadow-soft), var(--shadow-glow);
 }
 
-.volume-slider input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.3);
+/* Show thumb on hover */
+.volume-slider:hover .volume-thumb {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.3);
   box-shadow: var(--shadow-medium), var(--shadow-glow-strong);
 }
 
@@ -1324,6 +1367,7 @@ body::before {
 }
 
 audio {
+  transition: volume 0.3s ease;
   display: none;
 }
 

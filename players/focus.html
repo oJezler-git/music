@@ -196,6 +196,7 @@
                 step="0.01"
                 value="1"
               />
+              <div class="volume-thumb"></div>
             </div>
           </div>
         </div>
@@ -258,8 +259,18 @@
       let isTimerRunning = false;
       let isWorkPhase = true;
       let pendingTimerModeChange = null;
+      let fadeInterval;
+      let originalVolume = 1;
+      let isFading = false;
+      let globalVolume = parseFloat(localStorage.getItem("playerVolume")) || 1;
       let timerEndSound = new Audio("../sounds/workintervalend.wav");
       let breakEndSound = new Audio("../sounds/breakintervalend.wav");
+
+      timerEndSound.volume = globalVolume;
+      breakEndSound.volume = globalVolume;
+
+      timerEndSound.preload = "auto";
+      breakEndSound.preload = "auto";
 
       // DOM elements
       const dropdownBtn = document.getElementById("dropdown-btn");
@@ -708,9 +719,18 @@
         ) {
           if (timeLeft > 0) {
             timeLeft--;
+
+            // Check if we're 6 seconds from transition (for interval mode)
+            if (
+              currentTimerMode === "interval" &&
+              timeLeft === 6 &&
+              !isFading
+            ) {
+              handleTimerCompletion();
+            }
           } else {
-            handleTimerCompletion();
-            return; // Exit early after handling completion
+            // This will now be handled by the fade system
+            return;
           }
         }
         updateTimerDisplay();
@@ -727,17 +747,23 @@
       function handleTimerCompletion() {
         if (currentTimerMode === "interval") {
           if (isWorkPhase) {
-            timerEndSound.play();
-            const breakMinutes = parseInt(breakMinutesInput.value || 10);
-            timeLeft = breakMinutes * 60;
-            isWorkPhase = false;
-            timerLabel.textContent = `BREAK: ${breakMinutes} MINUTES`;
+            // Work phase ending - transition to break
+            startAudioTransition(timerEndSound, () => {
+              timerEndSound.play();
+              const breakMinutes = parseInt(breakMinutesInput.value || 10);
+              timeLeft = breakMinutes * 60;
+              isWorkPhase = false;
+              timerLabel.textContent = `BREAK: ${breakMinutes} MINUTES`;
+            });
           } else {
-            breakEndSound.play();
-            const workMinutes = parseInt(workMinutesInput.value || 25);
-            timeLeft = workMinutes * 60;
-            isWorkPhase = true;
-            timerLabel.textContent = `WORK: ${workMinutes} MINUTES`;
+            // Break phase ending - transition to work
+            startAudioTransition(breakEndSound, () => {
+              breakEndSound.play();
+              const workMinutes = parseInt(workMinutesInput.value || 25);
+              timeLeft = workMinutes * 60;
+              isWorkPhase = true;
+              timerLabel.textContent = `WORK: ${workMinutes} MINUTES`;
+            });
           }
         } else {
           timerEndSound.play();
@@ -745,17 +771,77 @@
         }
       }
 
+      function startAudioTransition(transitionSound, completionCallback) {
+        // Store original volume
+        originalVolume = audioPlayer.volume;
+        const dimmedVolume = originalVolume * 0.1; // Reduce to 10% of original volume
+
+        const fadeDuration = 6000; // 6 seconds
+        const notificationTime = 3000; // Play sound at 3 seconds remaining
+
+        let fadeStartTime = Date.now();
+        isFading = true;
+
+        if (fadeInterval) clearInterval(fadeInterval);
+
+        fadeInterval = setInterval(() => {
+          const elapsed = Date.now() - fadeStartTime;
+          const remaining = fadeDuration - elapsed;
+
+          // Smooth fade out to 10% volume
+          if (elapsed < fadeDuration / 2) {
+            // First half: fade out
+            const fadeOutProgress = elapsed / (fadeDuration / 2);
+            audioPlayer.volume =
+              originalVolume -
+              (originalVolume - dimmedVolume) * fadeOutProgress;
+          }
+          // Second half will be handled after notification sound
+
+          // Play notification sound at 3 seconds remaining
+          if (remaining <= notificationTime && remaining > 2900) {
+            transitionSound.currentTime = 0;
+            transitionSound.play();
+
+            // Start fading back up after notification plays
+            setTimeout(() => {
+              const fadeUpStart = Date.now();
+              const fadeUpInterval = setInterval(() => {
+                const fadeUpElapsed = Date.now() - fadeUpStart;
+                const fadeUpProgress = fadeUpElapsed / (fadeDuration / 2);
+
+                if (fadeUpProgress < 1) {
+                  audioPlayer.volume =
+                    dimmedVolume +
+                    (originalVolume - dimmedVolume) * fadeUpProgress;
+                } else {
+                  audioPlayer.volume = originalVolume;
+                  clearInterval(fadeUpInterval);
+                }
+              }, 50);
+            }, 50);
+          }
+
+          // Complete transition when time is up
+          if (elapsed >= fadeDuration) {
+            clearInterval(fadeInterval);
+            isFading = false;
+            completionCallback();
+          }
+        }, 50);
+      }
+
       function updateIntervalButtonText() {
         let label;
         switch (currentTimerMode) {
           case "infinite":
-            label = isTimerRunning ? "Stop" : "Infinite";
+            label = isTimerRunning ? "Change" : "Infinite";
             break;
           case "timer":
-            label = isTimerRunning ? "Stop" : "Timer";
+            label = isTimerRunning ? "Change" : "Timer";
             break;
           case "interval":
-            label = isTimerRunning ? "Stop" : "Pomodoro";
+            label = isTimerRunning ? "Change" : "Pomodoro";
             break;
         }
         intervalBtn.innerHTML = `<span>⏱</span><span>${label}</span>`;
@@ -827,19 +913,57 @@
         }, 50);
       });
 
-      volumeBtn.addEventListener("click", () => {
-        audioPlayer.muted = !audioPlayer.muted;
-        volumeRange.value = audioPlayer.muted
-          ? 0
-          : localStorage.getItem("playerVolume") || 1;
-        audioPlayer.volume = parseFloat(volumeRange.value);
+      volumeRange.addEventListener("input", function () {
+        const newVolume = parseFloat(this.value);
+        globalVolume = newVolume;
+
+        // Update main player volume
+        audioPlayer.volume = newVolume;
+        audioPlayer.muted = newVolume === 0;
+
+        // Update notification sounds volume
+        timerEndSound.volume = newVolume;
+        breakEndSound.volume = newVolume;
+
+        // Update UI
+        volumeSlider.style.setProperty("--volume-percent", newVolume * 100);
+        const thumb = volumeSlider.querySelector(".volume-thumb");
+        thumb.style.left = `${newVolume * 100}%`;
+
         volumeBtn.textContent =
-          volumeRange.value == 0
-            ? "🔇"
-            : volumeRange.value <= 0.5
-            ? "🔉"
-            : "🔊";
-        localStorage.setItem("playerVolume", volumeRange.value);
+          newVolume === 0 ? "🔇" : newVolume <= 0.5 ? "🔉" : "🔊";
+
+        localStorage.setItem("playerVolume", newVolume);
+      });
+
+      // Initialize the volume fill and thumb position on load
+      const initialVolume = volumeRange.value * 100;
+      volumeSlider.style.setProperty("--volume-percent", initialVolume);
+      const thumb = volumeSlider.querySelector(".volume-thumb");
+      thumb.style.left = `${initialVolume}%`;
+
+      volumeBtn.addEventListener("click", () => {
+        const isMuted = audioPlayer.muted || globalVolume === 0;
+        const newVolume = isMuted
+          ? parseFloat(localStorage.getItem("playerVolume")) || 0.7
+          : 0;
+
+        globalVolume = newVolume;
+        audioPlayer.volume = newVolume;
+        audioPlayer.muted = newVolume === 0;
+        timerEndSound.volume = newVolume;
+        breakEndSound.volume = newVolume;
+        volumeRange.value = newVolume;
+
+        // Update UI
+        volumeSlider.style.setProperty("--volume-percent", newVolume * 100);
+        const thumb = volumeSlider.querySelector(".volume-thumb");
+        thumb.style.left = `${newVolume * 100}%`;
+
+        volumeBtn.textContent =
+          newVolume === 0 ? "🔇" : newVolume <= 0.5 ? "🔉" : "🔊";
+
+        localStorage.setItem("playerVolume", newVolume);
       });
 
       volumeRange.addEventListener("input", () => {
