@@ -125,24 +125,12 @@
             <div class="custom-time-inputs">
               <div class="custom-time-input">
                 <span>Work:</span>
-                <input
-                  type="number"
-                  id="work-minutes"
-                  min="1"
-                  max="120"
-                  placeholder="20"
-                />
+                <input id="work-minutes" min="1" max="120" placeholder="20" />
                 <span>min</span>
               </div>
               <div class="custom-time-input">
                 <span>Break:</span>
-                <input
-                  type="number"
-                  id="break-minutes"
-                  min="1"
-                  max="30"
-                  placeholder="5"
-                />
+                <input id="break-minutes" min="1" max="30" placeholder="5" />
                 <span>min</span>
               </div>
             </div>
@@ -171,20 +159,14 @@
             <div class="custom-time-inputs">
               <div class="custom-time-input">
                 <span>Custom:</span>
-                <input
-                  type="number"
-                  id="timer-minutes"
-                  min="1"
-                  max="120"
-                  placeholder="25"
-                />
+                <input id="timer-minutes" min="1" max="120" placeholder="25" />
                 <span>min</span>
               </div>
             </div>
           </div>
-
           <button class="interval-btn" id="confirm-timer-btn">
-            Start Timer
+            <span>▶</span>
+            <span>Start Timer</span>
           </button>
         </div>
       </div>
@@ -270,8 +252,8 @@
       let isSelectingTrack = false;
 
       // Timer system
-      let timerMode = "infinite"; // 'infinite', 'timer', or 'interval'
-      let currentTimerMode = "infinite";
+      let timerMode = "interval"; // 'infinite', 'timer', or 'interval'
+      let currentTimerMode = "interval";
       let isTimerRunning = false;
       let isWorkPhase = true;
       let pendingTimerModeChange = null;
@@ -535,6 +517,7 @@
       confirmTimerBtn.addEventListener("click", () => {
         // If timer is running and we're changing to a different mode, show warning
         if (isTimerRunning && currentTimerMode !== timerMode) {
+          pendingTimerModeChange = timerMode; // Set this BEFORE showing warning
           warningModal.classList.add("show");
           return;
         }
@@ -548,39 +531,48 @@
         closeTimerOverlay();
         if (timerInterval) clearInterval(timerInterval);
 
-        // Update the current mode
+        // Update the current mode - this is the key fix
         currentTimerMode = pendingTimerModeChange || timerMode;
-        timerMode = currentTimerMode;
 
         // Reset Pomodoro state when changing modes
         isWorkPhase = true;
 
-        switch (timerMode) {
+        switch (currentTimerMode) {
           case "infinite":
             timeLeft = 0;
             timerLabel.textContent = "INFINITE PLAY";
             break;
           case "timer":
-            timeLeft = parseInt(timerMinutesInput.value || 25) * 60;
-            timerLabel.textContent = `${
-              timerMinutesInput.value || 25
-            } MINUTE TIMER`;
+            const timerMinutes = parseInt(timerMinutesInput.value || 25);
+            timeLeft = timerMinutes * 60;
+            timerLabel.textContent = `${timerMinutes} MINUTE TIMER`;
             break;
           case "interval":
-            timeLeft = parseInt(workMinutesInput.value || 25) * 60;
-            timerLabel.textContent = `WORK: ${
-              workMinutesInput.value || 25
-            } MINUTES`;
+            // Make sure we get the work time from the input or default to 25
+            const workMinutes = parseInt(workMinutesInput.value) || 25;
+            timeLeft = workMinutes * 60; // This should be the work time in seconds
+            timerLabel.textContent = `WORK: ${workMinutes} MINUTES`;
             break;
         }
 
         updateTimerDisplay();
+        isTimerRunning = false; // Reset timer running state
+        updateIntervalButtonText();
+
+        // Only start timer if audio is playing
         if (isPlaying) {
           startTimer();
         }
 
         pendingTimerModeChange = null;
       }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // Set default values for inputs if they're empty
+        if (!workMinutesInput.value) workMinutesInput.value = 25;
+        if (!breakMinutesInput.value) breakMinutesInput.value = 10;
+        if (!timerMinutesInput.value) timerMinutesInput.value = 25;
+      });
 
       // Add warning modal handlers
       cancelWarningBtn.addEventListener("click", () => {
@@ -621,13 +613,17 @@
           return;
         }
 
-        if (timerMode === "infinite") {
+        if (currentTimerMode === "infinite") {
           timeLeft++;
-        } else {
+        } else if (
+          currentTimerMode === "timer" ||
+          currentTimerMode === "interval"
+        ) {
           if (timeLeft > 0) {
             timeLeft--;
           } else {
             handleTimerCompletion();
+            return; // Exit early after handling completion
           }
         }
         updateTimerDisplay();
@@ -642,17 +638,19 @@
       }
 
       function handleTimerCompletion() {
-        if (timerMode === "interval") {
+        if (currentTimerMode === "interval") {
           if (isWorkPhase) {
             timerEndSound.play();
-            timeLeft = parseInt(breakMinutesInput.value) * 60;
+            const breakMinutes = parseInt(breakMinutesInput.value || 10);
+            timeLeft = breakMinutes * 60;
             isWorkPhase = false;
-            timerLabel.textContent = `BREAK: ${breakMinutesInput.value} MINUTES`;
+            timerLabel.textContent = `BREAK: ${breakMinutes} MINUTES`;
           } else {
             breakEndSound.play();
-            timeLeft = parseInt(workMinutesInput.value) * 60;
+            const workMinutes = parseInt(workMinutesInput.value || 25);
+            timeLeft = workMinutes * 60;
             isWorkPhase = true;
-            timerLabel.textContent = `WORK: ${workMinutesInput.value} MINUTES`;
+            timerLabel.textContent = `WORK: ${workMinutes} MINUTES`;
           }
         } else {
           timerEndSound.play();
@@ -662,7 +660,7 @@
 
       function updateIntervalButtonText() {
         let label;
-        switch (timerMode) {
+        switch (currentTimerMode) {
           case "infinite":
             label = isTimerRunning ? "Stop" : "Infinite";
             break;
@@ -812,6 +810,14 @@
           audioPlayer.src = currentTracks[0].url;
           document.querySelectorAll(".track-item")[0].classList.add("active");
         }
+
+        // Initialize timer based on current mode
+        if (currentTimerMode === "interval") {
+          const workMinutes = parseInt(workMinutesInput.value) || 25;
+          timeLeft = workMinutes * 60;
+          timerLabel.textContent = `WORK: ${workMinutes} MINUTES`;
+        }
+
         updateTimerDisplay();
         updateIntervalButtonText();
       }
