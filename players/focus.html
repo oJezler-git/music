@@ -749,7 +749,6 @@
           if (isWorkPhase) {
             // Work phase ending - transition to break
             startAudioTransition(timerEndSound, () => {
-              timerEndSound.play();
               const breakMinutes = parseInt(breakMinutesInput.value || 10);
               timeLeft = breakMinutes * 60;
               isWorkPhase = false;
@@ -758,7 +757,6 @@
           } else {
             // Break phase ending - transition to work
             startAudioTransition(breakEndSound, () => {
-              breakEndSound.play();
               const workMinutes = parseInt(workMinutesInput.value || 25);
               timeLeft = workMinutes * 60;
               isWorkPhase = true;
@@ -772,14 +770,13 @@
       }
 
       function startAudioTransition(transitionSound, completionCallback) {
+        console.log("Starting audio transition");
+
         // Store original volume
         originalVolume = audioPlayer.volume;
-        const dimmedVolume = originalVolume * 0.1; // Reduce to 10% of original volume
-
-        const fadeDuration = 6000; // 6 seconds
-        const notificationTime = 3000; // Play sound at 3 seconds remaining
-
-        let fadeStartTime = Date.now();
+        const fadeDuration = 6000; // 6 seconds total
+        const soundPlayTime = 3000; // Play sound at 3 seconds (midway)
+        const fadeStartTime = Date.now();
         isFading = true;
 
         if (fadeInterval) clearInterval(fadeInterval);
@@ -788,45 +785,41 @@
           const elapsed = Date.now() - fadeStartTime;
           const remaining = fadeDuration - elapsed;
 
-          // Smooth fade out to 10% volume
-          if (elapsed < fadeDuration / 2) {
-            // First half: fade out
-            const fadeOutProgress = elapsed / (fadeDuration / 2);
-            audioPlayer.volume =
-              originalVolume -
-              (originalVolume - dimmedVolume) * fadeOutProgress;
+          // 1. Fade out over first 6 seconds
+          if (elapsed <= fadeDuration) {
+            const fadeProgress = elapsed / fadeDuration;
+            audioPlayer.volume = originalVolume * (1 - fadeProgress);
           }
-          // Second half will be handled after notification sound
 
-          // Play notification sound at 3 seconds remaining
-          if (remaining <= notificationTime && remaining > 2900) {
+          // 2. Play sound at 3 seconds (midway through fade)
+          if (elapsed >= soundPlayTime && elapsed < soundPlayTime + 100) {
+            // Small window to prevent multiple plays
             transitionSound.currentTime = 0;
             transitionSound.play();
-
-            // Start fading back up after notification plays
-            setTimeout(() => {
-              const fadeUpStart = Date.now();
-              const fadeUpInterval = setInterval(() => {
-                const fadeUpElapsed = Date.now() - fadeUpStart;
-                const fadeUpProgress = fadeUpElapsed / (fadeDuration / 2);
-
-                if (fadeUpProgress < 1) {
-                  audioPlayer.volume =
-                    dimmedVolume +
-                    (originalVolume - dimmedVolume) * fadeUpProgress;
-                } else {
-                  audioPlayer.volume = originalVolume;
-                  clearInterval(fadeUpInterval);
-                }
-              }, 50);
-            }, 50);
           }
 
-          // Complete transition when time is up
+          // 3. When fade completes (6 seconds)
           if (elapsed >= fadeDuration) {
             clearInterval(fadeInterval);
-            isFading = false;
-            completionCallback();
+
+            // 4. Fade volume back up over 3 seconds
+            const fadeBackDuration = 3000;
+            const fadeBackStart = Date.now();
+            const fadeBackInterval = setInterval(() => {
+              const fadeBackElapsed = Date.now() - fadeBackStart;
+              const fadeBackProgress = Math.min(
+                fadeBackElapsed / fadeBackDuration,
+                1
+              );
+
+              audioPlayer.volume = originalVolume * fadeBackProgress;
+
+              if (fadeBackProgress >= 1) {
+                clearInterval(fadeBackInterval);
+                isFading = false;
+                completionCallback();
+              }
+            }, 50);
           }
         }, 50);
       }
@@ -1012,6 +1005,27 @@
         }
       });
 
+      // Debug volume display toggle
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "D" && e.shiftKey) {
+          // Shift+D to toggle debug
+          const debug = document.getElementById("volume-debug");
+          debug.style.display =
+            debug.style.display === "none" ? "block" : "none";
+        }
+      });
+
+      // Update debug display continuously
+      setInterval(() => {
+        const debug = document.getElementById("volume-debug");
+        if (debug.style.display !== "none") {
+          debug.textContent =
+            `Vol: ${(audioPlayer.volume * 100).toFixed(1)}% ` +
+            `(Muted: ${audioPlayer.muted}) ` +
+            `(Fading: ${isFading})`;
+        }
+      }, 100);
+
       async function init() {
         bottomPlayer.classList.add("show");
         await loadTracks(currentActivity);
@@ -1035,5 +1049,19 @@
 
       init();
     </script>
+    <div
+      id="volume-debug"
+      style="
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        display: none;
+      "
+    ></div>
   </body>
 </html>
