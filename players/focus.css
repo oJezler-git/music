@@ -11,13 +11,13 @@
   --glass-hover: rgba(26, 35, 56, 0.8);
 
   /* Mode-specific accent colors */
-  --focus-primary: #ff006b;
-  --focus-secondary: #9c27b0;
-  --focus-glow: rgba(255, 0, 107, 0.3);
+  --relax-primary: #ff006b;
+  --relax-secondary: #9c27b0;
+  --relax-glow: rgba(255, 0, 107, 0.3);
 
-  --relax-primary: #00bcd4;
-  --relax-secondary: #4dd0e1;
-  --relax-glow: rgba(0, 188, 212, 0.3);
+  --focus-primary: #00bcd4;
+  --focus-secondary: #4dd0e1;
+  --focus-glow: rgba(0, 188, 212, 0.3);
 
   --sleep-primary: #673ab7;
   --sleep-secondary: #3f51b5;
@@ -794,9 +794,13 @@ body::before {
 }
 
 .interval-btn {
-  background: linear-gradient(135deg, var(--glass-bg) 0%, var(--bg-card) 100%);
-  border: 2px solid var(--glass-border);
-  color: var(--text-primary);
+  background: linear-gradient(
+    135deg,
+    rgba(77, 208, 225, 0.2) 0%,
+    rgba(77, 208, 225, 0.1) 100%
+  );
+  border: 2px solid rgba(77, 208, 225, 0.3);
+  color: #4dd0e1;
   padding: 18px 36px;
   border-radius: var(--border-radius-lg);
   cursor: pointer;
@@ -808,9 +812,24 @@ body::before {
   gap: 12px;
   margin: 0 auto;
   transition: all var(--transition-fast);
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 4px 20px rgba(77, 208, 225, 0.2);
   position: relative;
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: buttonEntrance 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 0.4s;
+}
+
+@keyframes buttonEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .interval-btn::before {
@@ -823,7 +842,7 @@ body::before {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--accent-glow),
+    rgba(77, 208, 225, 0.3),
     transparent
   );
   transition: left 0.6s;
@@ -832,17 +851,27 @@ body::before {
 .interval-btn:hover {
   background: linear-gradient(
     135deg,
-    var(--accent-primary) 0%,
-    var(--accent-secondary) 100%
+    rgba(77, 208, 225, 0.4) 0%,
+    rgba(77, 208, 225, 0.2) 100%
   );
-  border-color: var(--accent-primary);
+  border-color: rgba(77, 208, 225, 0.6);
   transform: translateY(-6px) scale(1.02);
-  box-shadow: var(--shadow-medium), var(--shadow-glow-strong);
+  box-shadow: 0 8px 30px rgba(77, 208, 225, 0.3);
   color: white;
 }
 
 .interval-btn:hover::before {
   left: 100%;
+}
+
+.interval-btn span:first-child {
+  font-size: 20px;
+  transition: all var(--transition-fast);
+}
+
+.interval-btn:hover span:first-child {
+  transform: rotate(15deg) scale(1.2);
+  text-shadow: 0 0 10px rgba(77, 208, 225, 0.5);
 }
 
 /* Enhanced bottom player with neon accents */
