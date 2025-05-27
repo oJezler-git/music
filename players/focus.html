@@ -986,26 +986,26 @@
         }
       });
 
-      // Debug volume display toggle
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "D" && e.shiftKey) {
-          // Shift+D to toggle debug
-          const debug = document.getElementById("volume-debug");
-          debug.style.display =
-            debug.style.display === "none" ? "block" : "none";
-        }
-      });
+      // // Debug volume display toggle
+      // document.addEventListener("keydown", (e) => {
+      //   if (e.key === "D" && e.shiftKey) {
+      //     // Shift+D to toggle debug
+      //     const debug = document.getElementById("volume-debug");
+      //     debug.style.display =
+      //       debug.style.display === "none" ? "block" : "none";
+      //   }
+      // });
 
-      // Update debug display continuously
-      setInterval(() => {
-        const debug = document.getElementById("volume-debug");
-        if (debug.style.display !== "none") {
-          debug.textContent =
-            `Vol: ${(audioPlayer.volume * 100).toFixed(1)}% ` +
-            `(Muted: ${audioPlayer.muted}) ` +
-            `(Fading: ${isFading})`;
-        }
-      }, 100);
+      // // Update debug display continuously
+      // setInterval(() => {
+      //   const debug = document.getElementById("volume-debug");
+      //   if (debug.style.display !== "none") {
+      //     debug.textContent =
+      //       `Vol: ${(audioPlayer.volume * 100).toFixed(1)}% ` +
+      //       `(Muted: ${audioPlayer.muted}) ` +
+      //       `(Fading: ${isFading})`;
+      //   }
+      // }, 100);
 
       async function init() {
         bottomPlayer.classList.add("show");
@@ -1030,7 +1030,7 @@
 
       init();
     </script>
-    <div
+    <!-- <div
       id="volume-debug"
       style="
         position: fixed;
@@ -1043,6 +1043,6 @@
         font-family: monospace;
         display: none;
       "
-    ></div>
+    ></div> -->
   </body>
 </html>
