@@ -400,30 +400,6 @@
         }
       }
 
-      // Update play/pause button to handle lazy loading
-      playPauseBtn.addEventListener("click", async () => {
-        if (currentTrackIndex === -1 && currentTracks.length > 0) {
-          await selectTrack(0);
-        } else if (isPlaying) {
-          audioPlayer.pause();
-          isPlaying = false;
-          playPauseBtn.textContent = "▶";
-          stopTimer();
-        } else {
-          try {
-            // If src isn't loaded yet, this will trigger the load
-            await audioPlayer.play();
-            isPlaying = true;
-            playPauseBtn.textContent = "⏸";
-            startTimer();
-          } catch (error) {
-            console.error("Play failed:", error);
-            trackTitle.textContent = `${currentTracks[currentTrackIndex].name} (Click play again)`;
-          }
-        }
-        bottomPlayer.classList.add("show");
-      });
-
       // Activity dropdown
       dropdownBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -864,25 +840,30 @@
 
       // Audio controls
       playPauseBtn.addEventListener("click", async () => {
-        if (currentTrackIndex === -1 && currentTracks.length > 0) {
-          await selectTrack(0);
-        } else if (isPlaying) {
-          audioPlayer.pause();
-          isPlaying = false;
-          playPauseBtn.textContent = "▶";
-          stopTimer(); // Pause timer when audio pauses
-        } else {
-          try {
+        try {
+          if (currentTrackIndex === -1 && currentTracks.length > 0) {
+            await selectTrack(0);
+            return;
+          }
+
+          if (audioPlayer.paused) {
             await audioPlayer.play();
             isPlaying = true;
             playPauseBtn.textContent = "⏸";
-            startTimer(); // Start timer when audio plays
-          } catch (error) {
-            console.error("Play failed:", error);
-            trackTitle.textContent = `${currentTracks[currentTrackIndex].name} (Click play again)`;
+            startTimer();
+          } else {
+            audioPlayer.pause();
+            isPlaying = false;
+            playPauseBtn.textContent = "▶";
+            stopTimer();
           }
+          bottomPlayer.classList.add("show");
+        } catch (error) {
+          console.error("Play/Pause failed:", error);
+          trackTitle.textContent = `${
+            currentTracks[currentTrackIndex]?.name || "Track"
+          } (Error - try again)`;
         }
-        bottomPlayer.classList.add("show");
       });
 
       prevBtn.addEventListener("click", () => {
