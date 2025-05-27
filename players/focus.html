@@ -125,12 +125,24 @@
             <div class="custom-time-inputs">
               <div class="custom-time-input">
                 <span>Work:</span>
-                <input id="work-minutes" min="1" max="120" placeholder="20" />
+                <input
+                  id="work-minutes"
+                  min="1"
+                  max="120"
+                  value="25"
+                  placeholder="20"
+                />
                 <span>min</span>
               </div>
               <div class="custom-time-input">
                 <span>Break:</span>
-                <input id="break-minutes" min="1" max="30" placeholder="5" />
+                <input
+                  id="break-minutes"
+                  min="1"
+                  max="30"
+                  value="5"
+                  placeholder="5"
+                />
                 <span>min</span>
               </div>
             </div>
@@ -147,12 +159,11 @@
 
             <div class="time-options-container">
               <div class="time-option-column">
-                <button class="time-option-btn">5 min</button>
+                <div class="time-option-title">Rest Time</div>
+                <button class="time-option-btn active">5 min</button>
                 <button class="time-option-btn">10 min</button>
                 <button class="time-option-btn">15 min</button>
                 <button class="time-option-btn">20 min</button>
-                <button class="time-option-btn">25 min</button>
-                <button class="time-option-btn">30 min</button>
               </div>
             </div>
 
@@ -644,7 +655,7 @@
       document.addEventListener("DOMContentLoaded", function () {
         // Set default values for inputs if they're empty
         if (!workMinutesInput.value) workMinutesInput.value = 25;
-        if (!breakMinutesInput.value) breakMinutesInput.value = 10;
+        if (!breakMinutesInput.value) breakMinutesInput.value = 5;
         if (!timerMinutesInput.value) timerMinutesInput.value = 25;
       });
 
