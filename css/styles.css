@@ -1436,7 +1436,7 @@ audio {
   }
 
   .timer-section {
-    margin-bottom: 60px;
+    margin-bottom: 5%;
   }
 
   .timer-mode-options {
@@ -1701,7 +1701,7 @@ audio {
 
   .timer-display {
     font-size: 3.5rem;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
   }
 
   /* Compact player controls */

@@ -6,10 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
     />
-    <title>Focus</title>
+    <title>Relax</title>
     <link rel="stylesheet" href="../css/min_styles.css" />
   </head>
-  <body class="bg-deep-work mode-focus">
+  <body class="bg-deep-work">
     <!-- Top Bar -->
     <div class="top-bar">
       <a href="../index.html" class="back-btn" style="text-decoration: none"
@@ -18,23 +18,26 @@
 
       <div class="activity-selector">
         <button class="dropdown-btn" id="dropdown-btn">
-          <span id="current-icon">❄️</span>
-          <span id="current-activity">Deep Work</span>
+          <span id="current-icon">😎</span>
+          <span id="current-activity">Chill</span>
           <span>▼</span>
         </button>
         <div class="dropdown-content" id="dropdown-content">
           <div
             class="activity-option selected"
-            data-value="deep-work"
-            data-icon="❄️"
+            data-value="chill"
+            data-icon="😎"
           >
-            <span>Deep Work</span>
+            <span>Chill</span>
           </div>
-          <div class="activity-option" data-value="creativity" data-icon="🎨">
-            <span>Creativity</span>
+          <div class="activity-option" data-value="destress" data-icon="🎨">
+            <span>De-Stress</span>
           </div>
-          <div class="activity-option" data-value="learning" data-icon="📚">
-            <span>Learning</span>
+          <div class="activity-option" data-value="recharge" data-icon="🔋">
+            <span>Re-Charge</span>
+          </div>
+          <div class="activity-option" data-value="learning" data-icon="🌌">
+            <span>Unwind</span>
           </div>
         </div>
       </div>
@@ -235,7 +238,7 @@
     </div>
 
     <audio id="audio-player" preload="auto"></audio>
-    <script src="min_focus.js"></script>
+    <script src="relax.js"></script>
     <!-- <div
       id="volume-debug"
       style="
